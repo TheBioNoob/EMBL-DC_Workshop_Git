@@ -19,6 +19,9 @@ weight_kg <- 55
 #6 donot use umbers as names for objects and names cannot be used if reserved like basic grammar like "if, for" (is highlighter in different color then)
 #7 same case like #6 for other function names; variable is not called mean bc mean is a function-name (do not use as shortcut) but is not blue, so take care; my_mean woud work but not mean...
 #8 style suggestion: my_mean vs MY_MEAN or myMEAN -> either is fine but be consistent, there are online suggestions but not mandatory
+#9 be redundant with comments
+#10 use auto complete to avoid typos and not to have search 10 years for shit
+
 
 my_weight_kg <- 50
 (my_weight_kg <- 50)
@@ -44,6 +47,24 @@ weight_kg <- 100
 #save as xxxxx.R if R is not shown as modality
 
 #ctrl + S = shortcut for saving 
+#now go to git and commit
 
 
+#Exercise 1:
+mass <- 47.5
+age <- 122
+mass <- 2 * mass
+age <- age - 20
+mass_index <- mass/age
+#function is piece of code that executes certain things wo/ having to rerun the block of all commands and save time
 
+sqrt(9)
+#returns a value and not every function needs to return a value
+#sqrt retains one argument but there are functions that need more than one -> help section
+#function used on stuff that is going to be saved as new value
+weight_kg <- sqrt(9)
+#function _ bunch of lines of code that do certain things and give you output
+
+?round()
+#even here you can seatch
+#console search -> script is for rerun and help not so use console
