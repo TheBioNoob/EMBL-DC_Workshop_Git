@@ -68,3 +68,36 @@ weight_kg <- sqrt(9)
 ?round()
 #even here you can seatch
 #console search -> script is for rerun and help not so use console
+#fucntions have arguments, arguments can be values
+
+#fcuntion w/ multiple arguments
+round(3.14159)
+#rounded to one digit but function round can round to several digits, but default is 0 (it saysin help)
+round(3.14159, digits = 3)
+round(3.14159, 2)
+#is the same in both versions
+#round has two arguments and since srguments are not named R uses position which is which
+
+round(digits = 2, x = 3.14159)
+#if argument is specified, position doesn´t matter
+# here = 2 and not <- , assignment an = are two different things and used in different contexts
+
+round(2, 3.14159)
+#as arguments have order and are not specified, here it takes it as defualt
+#argument is necessary if no = there
+round(digits = 2)
+#doesnt work
+args(round)
+#specifies the args
+#ComplexHeatmap::add_heatmap -> write it in console function and subfunction
+
+#how to know what is in a function, here new function written
+my_function <- function(x) {
+  x <- x+2
+}
+#curly brackets stores code for funtion
+#see whats ina function by typing it into console wo/ brackets to see the parts
+#or View(my_function)
+#or glasses beside a function
+
+my_result <- my_function(3)
