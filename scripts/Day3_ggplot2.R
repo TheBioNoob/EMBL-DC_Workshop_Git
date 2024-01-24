@@ -309,8 +309,8 @@ plt <- surveys_complete %>%
       y = n,
       color = sex)) +
   geom_line() +
-  facet_wrap(facets = vars(genus)) +
-  #
+  facet_wrap(facets = vars(genus) #scales = "free"_y, free_x) +
+  
   scale_color_manual(
   values = c("tomato", "dodgerblue"), 
   labels = c("female", "male"),
@@ -341,13 +341,6 @@ ggsave(filename="data/plot.pdf",
 
 #be cautious when there are too many different axis -> it might not have been done with the same scale
 #package for p values
-
-
-
-
-
-
-
 
 
 
