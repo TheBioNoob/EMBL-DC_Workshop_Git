@@ -130,7 +130,55 @@ surveys %>%
   unique()
   View()
   
-    
+#convert table from long format to wide format
+#row to column
+#wide -> long
+surveys_gw <- surveys %>% 
+  filter(!is.na(weight)) %>% 
+  group_by(plot_id, genus) %>% 
+  summarize(mean_weight = mean(weight))
+  
+str(surveys_gw)
+
+surveys_wide <- surveys_gw %>% 
+  pivot_wider(names_from = genus, values_from = mean_weight, values_fill = 0) #turn and fill NA(missing data) as 0 #values fill is specific to NA, only for pivor #replace_na?
+#if pivor is in a function then go back to point where it worked and behaves as it 
+  
+
+#long -> wide
+#when plotting things ggplot wants data to be in long format, conversion is important and useful
+#key is repeated for each of the plot id and value is beside that!
+surveys_long <- surveys_wide %>% 
+  pivot_longer(names_to = "genus", values_to = "mean_weight", cols = -plot_id )    #"" bc name of column, what to use, plod id kept and what is to be transferred
+
+str(surveys_long)
 
 
+#Exercise 1:
+#1
+surveys_new <- surveys %>% 
+  pivot_longer(names_to = "measurement", values_to = "value", cols = c(hindfoot_length, weight)) %>%
+  View()
 
+#2
+surveys_new %>% 
+  group_by(year, measurement, plot_id) %>% 
+  summarize(mean_value = mean(value, na.rm = T)) %>%
+  pivot_wider(names_from = measurement, values_from = mean_value)
+  
+  
+
+#Export the Data
+#create a table
+surveys_complete <- surveys %>% 
+  filter(!is.na(weight), 
+         !is.na(hindfoot_length),
+         !is.na(sex))
+
+write_csv(surveys_complete, file = "surveys_complete.csv")    #name of the table, name of the file we want to call it
+#store it in other place: write_csv(surveys_complete, file = "data_raw/surveys_complete.csv") #right click enables you to find path with clicking but typing is better and you can always check in your directory
+#there is a package that reads excel files
+  
+  
+  
+  
