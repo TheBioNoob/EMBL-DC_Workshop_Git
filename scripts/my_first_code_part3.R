@@ -83,5 +83,87 @@ my_list$names
 
 surveys[[3]]
 
+#Continuation from Tuesday - Factors --- 24.01.24
+
+#Tools -> general -> Never (Workspace)
+#set it to never and rerun the code in the beginning
+
+str(surveys)
+#several columns are integers and other ar characters but some of them contain sth that is a category rather than character (e.g. species)
+#difference -> content can get limited number of values and not any range of values
+#special category for handling such categorical data
+#once a factor is created it can only contain a predetermined set of values (namely levels) -> not long string saved and occupying space in bits and bites -> one word is stored as 1/2..-> more efficient speed or space wise
+#important for conversion and level 
+surveys$sex <-  factor(surveys$sex)
+#can be done on data.frame in a slightly different way but also as a vector output
+#can be done on independant vector, too factor e.g. (c(1,2,1,2,2,1))
+#unique values -> alphabetic sort -> levels ordered alphabetically -> F = 1, M = 2
+#reassignment of levels can be forced
+
+levels(surveys$sex) #shos levels and order is returned in waay in which they have been saved
+nlevels(surveys$sex) #number of levels
+
+#force a factor to take levels in prefered way:
+sex <-  factor(c("male", "female", "female", "male"))
+#putting sex in to console gives us num ebr of levels and quality
+sex <- factor(sex, levels = c("male", "female")) # qualities not changed but order
+
+
+#Exercise 1:
+taxa <-  surveys$taxa <- factor(surveys$taxa)
+levels(taxa)
+nlevels(taxa)
+sum(surveys$taxa == "Rabbit")
+summary(surveys$taxa)
+#gives number of animals
+
+genus <-  surveys$genus <- factor(surveys$genus)
+levels(genus)
+nlevels(genus)
+
+
+#convert factors to characters
+as.character(sex)
+
+year_fct <- factor(c(1990, 1983, 1977, 1997))
+#levels have been sortes as ordered as numbers
+as.numeric(year_fct) # result is shit bc chronological order is given, R has created levels for vector when it was asked to be made a factor 
+
+#quick and dirty way to transform numbers - double transformation 
+as.numeric(as.character(year_fct))
+# not clean bc it does a double conversion and not what we know abt factors and that factors are encoded as levels
+
+#better and rigt way
+as.numeric(levels(year_fct))[year_fct]
+#obtaining levels with middle command, then converting the levels as a numeric => sorted version of numeric
+#square bracket year factor contains numbers that coorespond to levels, initial vector in the order that is wanted
+#assigning the original levels the numbers! nr 1 is 1977, number 2 is 1983, number 3 is 1990... but the order is different
+#indexing is associated with transformation!
+#levels are always stored as character bc it is the most generic as seen on Tuesday
+
+#rename factors
+plot(surveys$sex)
+snummary(surveys$sex) # NA not plotted, how do we gat that into the plot?
+sex <- surveys$sex
+levels(sex) #default for F and M, now add another
+sex <- addNA(sex)
+levels(sex)
+#now modify NA to other name bc we want it to be "undefined"
+levels(sex)[3] <- "undetermined"
+#levels are redone and level 3 of all levels which is NA is changed to 
+#to plot sth it does not need to be factor but its good for count estimations
+
+#Exercise 2:
+levels(sex)[1:2] <- c("female", "male")
+plot(sex)
+#changing names for f and m
+
+#reorder sexes 
+sex <- factor(sex, levels = c("undetermined", "female", "male"))
+
+
+
+
+
 
 
