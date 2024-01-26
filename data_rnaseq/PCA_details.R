@@ -214,7 +214,7 @@ test_results %>%
 #most tomato points at 30´
 #MA plots usually have a cone shape and left is wider along y and become thinner along the x, bc genes with hifher base value change less - higher amount of reads necessary to push them away from the base line
 #add a horizontal line, to know the base value
-test_results %>% 
+ma_plot <- test_results %>% 
   mutate(sig = ifelse(padj < 0.01, log2FoldChange, NA)) %>%             #ifelse = 3 argument - test, if... a is valid, then do ..., if not, do ....
   ggplot(aes(x = log10(baseMean), y = log2FoldChange)) +                 #generates a new column called sig -> if yes, put it in the next column
   geom_point(alpha = 0.1) +
@@ -222,6 +222,89 @@ test_results %>%
   facet_wrap(facets = vars(comparison)) +
   geom_hline(yintercept = 0, color = "dodgerblue")
 #value threshold in volcano plot is a line, here it is a curved line and shows expression level which the volcano plot hides bc expression levels are diregarded
+
+#largest number of diff expressed genes/change - time point 30 the most different one
+(ma_plot | pca_plot)
+
+#how does expression change amongst time-points?
+#how does expression change
+##Visualizing expression trends
+#1. Get candidate gene (aka padj < 0.01)
+candidate_gene <- test_results %>% 
+  filter(padj < 0.01) %>% 
+  pull() %>%    #pipe friendly way t extract one column and turn it into a vector from a tibble/data.frame  
+            #like test_results[, "gene] aka test_results$gene -> just here pipe friendly and is pipe firendly
+            #piping is specific to tidyverse
+            #filter -> changes stuff in rows, mutate changes format
+  unique()  #input needs to be a vector
+  
+#1. get the trans-cts table in long format
+trans_cts_long <- trans_cts %>% 
+  pivot_longer(cols = wt_0_r1:mut_180_r3, names_to = "sample", values_to = "cts") %>% 
+  full_join(sample_info, by = "sample")
+#2. Fitler trans_cts_long for candidate genes and compute mean expression value for each gene in each tp and each genotype
+trans_cts_mean <- trans_cts_long %>% 
+  filter(gene %in% candidate_gene) %>%                 #%in% tests element in vector on left are contained in the vector on right - usually surrounded by %_% - require sth before and after!
+  group_by(gene, strain, minute) %>% 
+  summarize(mean_cts = mean(cts), nrep = n()) %>% 
+  
+#3. now ungroup -> table has a group that knows it has elements in it, drop the group
+  ungroup()                                 #refers to the ungroup from before, table may look the same but
+
+#4. plot
+trans_cts_mean %>% 
+  ggplot(aes(x = minute, y = mean_cts))+
+  geom_line(aes(group = gene), alpha = 0.3) +
+  facet_grid(rows = vars(strain))
+
+#align them relative to mean, which will highlight the variance 
+#scaling the data to improve isualization
+trans_cts_mean <- trans_cts_long %>% 
+  filter(gene %in% candidate_gene) %>% 
+  group_by(gene) %>% 
+  mutate(cts_scaled = cts - mean(cts) / sd(cts)) %>% 
+  group_by(gene, strain, minute) %>% 
+  summarize(mean_cts_scales = mean(cts_scaled),
+            nrep = n()) %>% 
+  ungroup()                                      #mutate applies the function to each group indiidually, which is sth you don´t want when you have output tables like this
+#before deseq merging of techinal replicates, biological replicated are notmerged at any point
+
+
+#graphics
+trans_cts_mean %>% 
+  ggplot(aes(x = minute, y = mean_cts_scaled)) +
+  geom_line(aes(group = gene), alpha = 0.3) +
+  geom_hline(yintercept = 0, color = "brown", linetype= "dashed")+
+  facet_grid(rows = vars(strain))
+#scale_x_continuous(breaks = unique (trans_cts_mean$minute))
+#exploring the results of diff express analysis -> pbservations support the cluster analysis -> find the genes and separate them according to the visible strands
+#multiple types of clustering possibl -> supervised and unupervised -> bottom up - aggregation of data from data being separated and putting them in the same cluster, other approches top -> down and given number of cluster = supervision comes into play
+
+##clustering
+#two main steps -> calculaate the distance matrix between pairs (PCA space instead of having one for per gene -> geometrich distance computed -> two dots have), other kind of distance = correlation and calculation of a value how an espression of a gene in two conditions is similar and calculate the square matrix and find groups that have similar values
+#there are many that give different results
+trans_cts
+#1 Create a maatrix of counts
+#trans_cts is in wide foramt and needs to go into matrix
+hclust_matrix <- trans_cts %>% 
+  select(-gene) %>% 
+  as.matrix()                         #upcoming function needs matrix
+rownames(hclust_matrix) <- trans_cts$gene
+hclust_matrix <- hclust_matrix[candidate_gene,]
+
+hclust_matrix <- hclust_matrix %>% #zscore transform (value - mean/SD) -> centers value to mean and sets unit euqal to SD 
+  t() %>% 
+  scale() %>%                               #scale transformation to column applied, aber z score needs to be computed for rows = genes -> transposition -> z score of rows -> put it back
+  t()
+dim(hclust_matrix)
+
+
+
+
+
+
+
+
 
 
 
