@@ -293,18 +293,56 @@ rownames(hclust_matrix) <- trans_cts$gene
 hclust_matrix <- hclust_matrix[candidate_gene,]
 
 hclust_matrix <- hclust_matrix %>% #zscore transform (value - mean/SD) -> centers value to mean and sets unit euqal to SD 
-  t() %>% 
+  t() %>%                                   #transpose the matrix se genes are in column
   scale() %>%                               #scale transformation to column applied, aber z score needs to be computed for rows = genes -> transposition -> z score of rows -> put it back
-  t()
+                                            #scaling to each column of the matrix (genes) - not all genes express at same level (housekeeping genes higher) -> being them to a mean value
+                                            #0.8x away from SD of mean of genes -> be able to compare across genes => z-score are according to 2 stdev +/-
+  t()                                       #transpose matrix back so genes are as rows again
 dim(hclust_matrix)
 
+#pairwise distances between all genes
+gene_dist <- dist(hclust_matrix)                  #calculation of pairwise distances in a matrix
+                                                #is a large distance list, cannot be clicked an viewed but is there
+
+#hierarchical clustering:
+gene_hclust <- hclust(gene_dist, method = "complete")         #method = complete linkage -> for more insights 
+                                                              #list of items newly created
+
+#visualize the clusters
+plot(gene_hclust, labels = F)
+abline(h = 10, col = "brown", lw = 2)             #all main branches of the dendogram are to become a cluster -> arbitrary tho!; is just a simple option, could be standardized but here for simplicity not
+
+##make clusters based on the number that I want
+cutree(gene_hclust, k = 5)      #gene names are associated with a number -> named vector created that contains the membershit of each gene to each cluster-> number indicates the number of cluster
+                                #cluster numbering is arbitrary but all the genes that are part of one cluster are in that one
+
+#are genes going the same expression changes?
+
+gene_cluster <- cutree(gene_hclust, k =5) %>% 
+  enframe() %>%                                                      #converts name vector to tibble with name an value of vector
+  rename(gene = name, cluster = value)                                                      #rename the gene 
+
+#combine expression levels from some table and this one with the names
+trans_cts_cluster <- trans_cts_mean %>% 
+  inner_join(gene_cluster, by = "gene")
 
 
+#plot that visualized the expression pattern
+trans_cts_cluster %>% 
+  ggplot(aes(x = minute, y = mean_cts_scale)) +
+  geom_line(aes(group = gene)) +
+  facet_grid(cols = vars(cluster), rows = vars(strain))      #cluster 1 upregulated together at certain timepoint, others are downregulated at 30 -> things that are not equivalent 
+                                                            #lustering worked well but there are problems here -> potentialy changeable thorugh more of less clusters
+#dev.off()  #re-running the lines one has posted
 
+#gene expression patterns are shown in heatmaps, make one
+#use of library instead of building it by scratch, which gives you control which you do not have when you use a package
+BiocManager::install("ComplexHeatmap")
+library(ComplexHeatmap)
 
-
-
-
+Heatmap(hclust_matrix, show_row_names = F)              #red messages don´t mean sth is wrong -> sometimes when things are already installed it gives you that!
+                                                        #each row is a single gene in a heatmap- need to go in similar direction
+                                                        #dendrogram will make clusters from dendrogram
 
 
 
