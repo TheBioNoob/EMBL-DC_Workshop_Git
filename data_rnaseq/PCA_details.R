@@ -166,5 +166,63 @@ autoplot(sample_pca) -> percentage of variance is adde on the axis
  tidy(sample_pca, matrix = "eigenvalues")     #forcats as part of tidyverse
  tidy(sample_pca, matrix = "loadings")        #how to create a funtion? 
  #tsne and umaps 
-  
-  
+ 
+ 
+ 
+ 
+ 
+ ##Francesco continuation
+ autoplot(sample_pca, data = sample_info %>%  mutate(minute = as.factor(minute)),
+          colour="minute", 
+          shape = "strain") 
+ 
+ ##visualizing DEA (differential expression results) test result table
+test_results <- read_csv("data_rnaseq/test_result.csv")
+test_results
+#results of deseq are taken here
+#gene column -> gene name
+#baseMean column -> normalized expression level of a gene
+#log2 FolgChange column -> amount of change betweens 2 conditions 
+#lfsCE -> standard error associated to log2FolgChange value
+#stat column -> statistics value computed as lof2FolgChange over lfcSE and compared to the standard normal distribution
+#pvalue -> integer of the are udner the cuve computed from this statistics to infinity, pävalue associated with the change
+#padj value -> p value corrected for multiple hypothesis testing -> needs to be done as we ae working with 30k genes 
+#fdr correction - falase pos aka 1st error 
+#comparison column = non-standard column and here for this particular expample and tells us which timepoint we are working with = comparison group 
+#deseq -> normalized data and other table we are currently looking at alos gotten (1. normalization and model fitting, then calling another fucntion "results", thtat splitts the table and spmute the pvalue and log2FoldChange -> output of multiple runs of this is the test_results table)
+
+#one way to plot the data -> MA plot (has a funny story coming from the microarray era)
+#base mean against log2fold change x and y
+#generate an MA plot (base mean vs log2FC), organize panels by comparison (time point). Hint: consider log-transformation baseMean -> ggmaplot is in fortify but you can go it with a general ggplot, too
+ggplot(data = test_results)+
+  geom_point(aes(x = baseMean, y = log2FoldChange)) +
+  geom_grid(aes(time)) #my try
+
+#solution
+test_results %>% 
+  ggplot(aes(x = log10(baseMean), y = log2FoldChange)) +
+  geom_point(aes(alpha = 0.1)) +
+  facet_wrap(facet = vars(comparison))   #or facet_grid
+
+#defining the genes that respond to treatment -> p value
+test_results %>% 
+  mutate(sig = ifelse(padj < 0.01, log2FoldChange, NA)) %>%             #ifelse = 3 argument - test, if... a is valid, then do ..., if not, do ....
+  ggplot(aes(x = log10(baseMean), y = log2FoldChange)) +                 #generates a new column called sig -> if yes, put it in the next column
+  geom_point(alpha = 0.1) +
+  geom_point(aes(y = sig), color = "tomato", size = 1) +
+  facet_wrap(facets = vars(comparison))
+#most tomato points at 30´
+#MA plots usually have a cone shape and left is wider along y and become thinner along the x, bc genes with hifher base value change less - higher amount of reads necessary to push them away from the base line
+#add a horizontal line, to know the base value
+test_results %>% 
+  mutate(sig = ifelse(padj < 0.01, log2FoldChange, NA)) %>%             #ifelse = 3 argument - test, if... a is valid, then do ..., if not, do ....
+  ggplot(aes(x = log10(baseMean), y = log2FoldChange)) +                 #generates a new column called sig -> if yes, put it in the next column
+  geom_point(alpha = 0.1) +
+  geom_point(aes(y = sig), color = "tomato", size = 1) +
+  facet_wrap(facets = vars(comparison)) +
+  geom_hline(yintercept = 0, color = "dodgerblue")
+#value threshold in volcano plot is a line, here it is a curved line and shows expression level which the volcano plot hides bc expression levels are diregarded
+
+
+
+
