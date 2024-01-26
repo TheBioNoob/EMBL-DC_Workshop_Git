@@ -109,20 +109,62 @@ ggplot(data = top_loadings)+
             nudge_y = 0.05, size = 3) +
   scale_x_continuous(expand = c(0.02, 0.02))                                #the longer the vector, the more does the gene contribute to the PC
   #no inference from PCA possible -> good as first analysis but unclear what exactly a PC is; good pointer into a direction 
+  #multidimensional data is impossible to visualize -> 4dimensions are the max and therefore PCA is some form of seeing what is there, even if it´s difficult visually
+  
+
   
   
   
-  
-  
-  
+##Friday
+#complex pannels and visualization - one call patchwork!
+#source button on top executes everything in one go
+#r studio understands whole constructions 
+#shift lines with one another alt+up/down key
+#select with shift + up/ton arrows
+#do noat save stuff in environment -> cleaning it is good practice and if your made a mistake, it is only affected by the code you currently have and not anything else
+
+
+#store result of plotting in a variable
+loadings_plot <- ggplot(data = top_loadings)+
+  geom_segment(aes(x = 0, y = 0, xend = PC1, yend = PC2),                    #draws lines 
+               arrow = arrow(length = unit(0.1, "in")),                        
+               color="brown") +
+  geom_text(aes(x = PC1, y = PC2, label = gene),                             #draws arrow tips
+            nudge_y = 0.05, size = 3) +
+  scale_x_continuous(expand = c(0.02, 0.02))   #the longer the vector, the more does the gene contribute to the PC
+#if stored in a variable -> plot will not be displayed in plots
+
+#join two plots - grab previous plots 
+pca_plot <- pc_scores %>% 
+  full_join(sample_info, by = "sample") %>% 
+  ggplot(aes(x = PC1, y = PC2, 
+             color = factor(minute),              #time is a categorical variable so we use factor to keep it that way 
+             shape = strain)) +
+  geom_point()
+
+#combine them with a new library
+library(patchwork)
+(pca_plot | loadings_plot) # plots are positoned side by side
+(pca_plot - loadings_plot) #does the same
+(pca_plot / loadings_plot) #one on top, the other below like in a division
+(pca_plot |pca_plot | pca_plot)/ loadings_plot #let´s say PC1/PC2, PC2/3 and PC3/4 -> display of first theree components in one fighure doing one figure
+(pca_plot |pca_plot | pca_plot)/ loadings_plot +
+  plot_annotation((tag_levels = "A")) # this is gg plot and therefore used the same with a + and same syntax
 
 
 
+#shortcuts to transforming data in tibble etc
+library(ggfortify)
 
+autoplot(sample_pca) -> percentage of variance is adde on the axis
 
-
-  
-  
-  
+#strain vs mutant and different symbol extract()
+ autoplot(sample_pca, data = sample_info, 
+          colour="minute", shape = "strain") 
+ 
+ library(broom)
+ tidy(sample_pca, matrix = "eigenvalues")     #forcats as part of tidyverse
+ tidy(sample_pca, matrix = "loadings")        #how to create a funtion? 
+ #tsne and umaps 
   
   
