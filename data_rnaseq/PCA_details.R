@@ -344,6 +344,6 @@ Heatmap(hclust_matrix, show_row_names = F)              #red messages don´t mea
                                                         #each row is a single gene in a heatmap- need to go in similar direction
                                                         #dendrogram will make clusters from dendrogram
 
-
+EMBL scientific visitor?
 
 
